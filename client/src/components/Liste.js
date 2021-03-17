@@ -11,9 +11,6 @@ class Liste extends Component {
         if (currentStatus==="RegisteringVoters"){
             titre = "list of voters";
         } 
-        // else {
-        //     const titre = ;
-        // }
         return (
             <div>
                 <div style={{display: 'flex', justifyContent: 'center'}}>

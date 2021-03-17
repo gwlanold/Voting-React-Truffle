@@ -11,6 +11,7 @@ import Voting from "./contracts/Voting.json";
 import getWeb3 from "./getWeb3";
 import "./App.css";
 import Liste from "./components/Liste";
+import Bouton from "./components/Bouton";
 
 class App extends Component {
   state = { web3: null, accounts: null, contract: null, whitelist: null, owner:null, status:null};
@@ -71,15 +72,38 @@ class App extends Component {
   }
 
   whitelist = async() => {
-    const { accounts, contract } = this.state;
+    const { contract } = this.state;
     const address = this.address.value;
     
     // Interaction avec le smart contract pour ajouter un compte 
-    await contract.methods.A_votersRegistration(address).send({from: accounts[0]});
+    await contract.methods.A_votersRegistration(address).send();
     // Récupérer la liste des comptes autorisés
     this.runInit();
   }
  
+  action = async() => {
+    const { contract, status } = this.state;
+    this.getstatus();
+    let currentStatus = status;
+    if (currentStatus==="RegisteringVoters"){
+      await contract.methods.B_proposalsRegistrationStart().send();
+    }
+    else if(currentStatus==="ProposalsRegistrationStarted"){
+      await contract.methods.D_proposalsRegistrationTermination().send();
+    }
+    else if(currentStatus==="ProposalsRegistrationEnded"){
+      await contract.methods.E_votingTimeStart().send();
+    }
+    else if(currentStatus==="VotingSessionStarted"){
+      await contract.methods.G_votingTimeTermination().send();
+    }
+    else if(currentStatus==="VotingSessionEnded"){
+      await contract.methods.G_votingTimeTermination().send();
+    }
+    else {
+      await contract.methods.H_CountVotes().send();
+    } 
+  }
 
   render() {
     const { whitelist, status } = this.state;
@@ -97,29 +121,6 @@ class App extends Component {
             <br></br>
         </div>
         <Liste whitelist={whitelist} status={status}/>
-        {/* <div style={{display: 'flex', justifyContent: 'center'}}>
-          <Card style={{ width: '50rem' }}>
-            <Card.Header><strong>Liste des électeurs</strong></Card.Header>
-            <Card.Body>
-              <ListGroup variant="flush">
-                <ListGroup.Item>
-                  <Table striped bordered hover>
-                    <thead>
-                      <tr>
-                        <th>@</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {whitelist !== null && 
-                        whitelist.map((a) => <tr><td>{a}</td></tr>)
-                      }
-                    </tbody>
-                  </Table>
-                </ListGroup.Item>
-              </ListGroup>
-            </Card.Body>
-          </Card>
-        </div> */}
         <br></br>
         <div style={{display: 'flex', justifyContent: 'center'}}>
           <Card style={{ width: '50rem' }}>
@@ -135,19 +136,7 @@ class App extends Component {
           </Card>
           </div>
           <br></br>
-          <div style={{display: 'flex', justifyContent: 'center'}}>
-          <Card style={{ width: '50rem' }}>
-            <Card.Header><strong></strong></Card.Header>
-            <Card.Body>
-              <Form.Group controlId="formAddress">
-                <Form.Control type="text" id="address"
-                ref={(input) => { this.address = input }}
-                />
-              </Form.Group>
-              <Button onClick={ this.whitelist } variant="dark" > Autoriser </Button>
-            </Card.Body>
-          </Card>
-          </div>
+          <Bouton />
         <br></br>
       </div>
     )}
