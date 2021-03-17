@@ -10,9 +10,10 @@ import Table from 'react-bootstrap/Table';
 import Voting from "./contracts/Voting.json";
 import getWeb3 from "./getWeb3";
 import "./App.css";
+import Liste from "./components/Liste";
 
 class App extends Component {
-  state = { web3: null, accounts: null, contract: null, whitelist: null, owner:null};
+  state = { web3: null, accounts: null, contract: null, whitelist: null, owner:null, status:null};
 
   componentWillMount = async () => {
     try {
@@ -58,8 +59,16 @@ class App extends Component {
     const whitelist = await contract.methods.getwhitelistarray().call();
     // Mettre à jour le state 
     this.setState({ whitelist: whitelist });
+    this.getstatus();
     console.log("whitelist[0]=",whitelist[0]);
   }; 
+
+  getstatus = async() => {
+    const { contract } = this.state;
+    const currentStatus = await contract.methods.getVoteStatus().call();
+    this.setState({ status: currentStatus });
+    console.log("status:",currentStatus)
+  }
 
   whitelist = async() => {
     const { accounts, contract } = this.state;
@@ -73,9 +82,10 @@ class App extends Component {
  
 
   render() {
-    const { whitelist } = this.state;
+    const { whitelist, status } = this.state;
+    
     // const isOwner = (this.state.accounts[0]==whitelist[0]);
-    if (!this.state.web3) {
+    if (!this.state.web3 || !this.state.status) {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
     else if (this.state.accounts[0]===this.state.owner) { //'0x75D846154589776adC82F8e94E0FF3BAF80fb06F'
@@ -86,7 +96,8 @@ class App extends Component {
             <hr></hr>
             <br></br>
         </div>
-        <div style={{display: 'flex', justifyContent: 'center'}}>
+        <Liste whitelist={whitelist} status={status}/>
+        {/* <div style={{display: 'flex', justifyContent: 'center'}}>
           <Card style={{ width: '50rem' }}>
             <Card.Header><strong>Liste des électeurs</strong></Card.Header>
             <Card.Body>
@@ -108,7 +119,7 @@ class App extends Component {
               </ListGroup>
             </Card.Body>
           </Card>
-        </div>
+        </div> */}
         <br></br>
         <div style={{display: 'flex', justifyContent: 'center'}}>
           <Card style={{ width: '50rem' }}>
